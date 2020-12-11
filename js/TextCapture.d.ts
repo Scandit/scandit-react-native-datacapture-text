@@ -1,0 +1,30 @@
+import { CameraSettings } from 'scandit-react-native-datacapture-core/js/Camera+Related';
+import { DataCaptureContext, DataCaptureMode } from 'scandit-react-native-datacapture-core/js/DataCaptureContext';
+import { DefaultSerializeable } from 'scandit-react-native-datacapture-core/js/private/Serializeable';
+import { TextCaptureFeedback } from './TextCaptureFeedback';
+import { TextCaptureListener } from './TextCaptureListener';
+import { TextCaptureSettings } from './TextCaptureSettings';
+export declare class TextCapture extends DefaultSerializeable implements DataCaptureMode {
+    get isEnabled(): boolean;
+    set isEnabled(isEnabled: boolean);
+    get context(): Optional<DataCaptureContext>;
+    static get recommendedCameraSettings(): CameraSettings;
+    get feedback(): TextCaptureFeedback;
+    set feedback(feedback: TextCaptureFeedback);
+    private type;
+    private _isEnabled;
+    private _feedback;
+    private settings;
+    private privateContext;
+    private get _context();
+    private set _context(value);
+    private listeners;
+    private listenerProxy;
+    private isInListenerCallback;
+    static forContext(context: Optional<DataCaptureContext>, settings: TextCaptureSettings): TextCapture;
+    private constructor();
+    applySettings(settings: TextCaptureSettings): Promise<void>;
+    addListener(listener: TextCaptureListener): void;
+    removeListener(listener: TextCaptureListener): void;
+    private didChange;
+}

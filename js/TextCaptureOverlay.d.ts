@@ -11,11 +11,11 @@ export declare class TextCaptureOverlay extends DefaultSerializeable implements 
     private _viewfinder;
     static get defaultBrush(): Brush;
     brush: Brush;
-    get viewfinder(): Viewfinder | null;
-    set viewfinder(newViewfinder: Viewfinder | null);
+    get viewfinder(): Optional<Viewfinder>;
+    set viewfinder(newViewfinder: Optional<Viewfinder>);
     get shouldShowScanAreaGuides(): boolean;
     set shouldShowScanAreaGuides(shouldShow: boolean);
     static withTextCapture(textCapture: TextCapture): TextCaptureOverlay;
-    static withTextCaptureForView(textCapture: TextCapture, view: DataCaptureView | null): TextCaptureOverlay;
+    static withTextCaptureForView(textCapture: TextCapture, view: Optional<DataCaptureView>): TextCaptureOverlay;
     private constructor();
 }

@@ -3,10 +3,10 @@ import { LocationSelection } from 'scandit-react-native-datacapture-core/js/Loca
 import { DefaultSerializeable } from 'scandit-react-native-datacapture-core/js/private/Serializeable';
 export declare class TextCaptureSettings extends DefaultSerializeable {
     duplicateFilter: number;
-    locationSelection: LocationSelection | null;
+    locationSelection: Optional<LocationSelection>;
     recognitionDirection: Direction;
     static fromJSON(json: {
         [key: string]: any;
-    }): TextCaptureSettings | null;
+    }): Optional<TextCaptureSettings>;
     private constructor();
 }

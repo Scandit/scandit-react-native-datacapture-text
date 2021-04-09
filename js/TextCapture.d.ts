@@ -7,7 +7,7 @@ import { TextCaptureSettings } from './TextCaptureSettings';
 export declare class TextCapture extends DefaultSerializeable implements DataCaptureMode {
     get isEnabled(): boolean;
     set isEnabled(isEnabled: boolean);
-    get context(): DataCaptureContext | null;
+    get context(): Optional<DataCaptureContext>;
     static get recommendedCameraSettings(): CameraSettings;
     get feedback(): TextCaptureFeedback;
     set feedback(feedback: TextCaptureFeedback);
@@ -21,7 +21,7 @@ export declare class TextCapture extends DefaultSerializeable implements DataCap
     private listeners;
     private listenerProxy;
     private isInListenerCallback;
-    static forContext(context: DataCaptureContext | null, settings: TextCaptureSettings): TextCapture;
+    static forContext(context: Optional<DataCaptureContext>, settings: TextCaptureSettings): TextCapture;
     private constructor();
     applySettings(settings: TextCaptureSettings): Promise<void>;
     addListener(listener: TextCaptureListener): void;

@@ -44,8 +44,8 @@ repositories {
 
 dependencies {
     api project(path: ':scandit-react-native-datacapture-core')
-    api(name: 'ScanditTextCapture', ext: 'aar')
-    api(name: 'ScanditTextCaptureBase', ext: 'aar')
+    api "com.scandit.datacapture:text:6.7.2"
+    api "com.scandit.datacapture:text-base:6.7.2"
 
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules

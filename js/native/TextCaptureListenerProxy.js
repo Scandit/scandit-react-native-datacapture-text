@@ -22,6 +22,7 @@ var TextCaptureListenerProxy = /** @class */ (function () {
     };
     TextCaptureListenerProxy.prototype.subscribeListener = function () {
         var _this = this;
+        NativeModule.registerListenerForEvents();
         var didCaptureTextListener = EventEmitter.addListener(TextCaptureListenerEventName.didCaptureText, function (body) {
             var session = TextCaptureSession_1.TextCaptureSession.fromJSON(JSON.parse(body.session));
             _this.notifyListenersOfDidCaptureText(session);
@@ -30,6 +31,7 @@ var TextCaptureListenerProxy = /** @class */ (function () {
         this.nativeListeners.push(didCaptureTextListener);
     };
     TextCaptureListenerProxy.prototype.unsubscribeListener = function () {
+        NativeModule.unregisterListenerForEvents();
         this.nativeListeners.forEach(function (listener) { return listener.remove(); });
         this.nativeListeners = [];
     };

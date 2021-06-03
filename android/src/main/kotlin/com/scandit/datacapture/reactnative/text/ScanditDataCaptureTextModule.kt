@@ -55,7 +55,7 @@ class ScanditDataCaptureTextModule(
                     SerializableTextCaptureDefaults(
                             TextCapture.createRecommendedCameraSettings(),
                             SerializableTextCaptureOverlayDefaults(
-                                    TextCaptureOverlay.defaultBrush()
+                                    TextCaptureOverlay.DEFAULT_BRUSH
                             ),
                             SerializableTextCaptureSettingsDefaults(
                                     settings.recognitionDirection.toJson(),

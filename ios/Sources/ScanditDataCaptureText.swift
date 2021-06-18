@@ -34,4 +34,10 @@ class ScanditDataCaptureText: RCTEventEmitter {
     internal func unlockLocks() {
         didCaptureTextLock.reset()
     }
+
+    // Empty methods to unify the logic on the TS side for supporting functionality automatically provided by RN on iOS,
+    // but custom implemented on Android.
+
+    @objc func registerListenerForEvents() { }
+    @objc func unregisterListenerForEvents() { }
 }

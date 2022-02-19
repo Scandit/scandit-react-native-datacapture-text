@@ -17,6 +17,7 @@ import com.scandit.datacapture.core.capture.DataCaptureMode
 import com.scandit.datacapture.core.common.toJson
 import com.scandit.datacapture.core.data.FrameData
 import com.scandit.datacapture.core.json.JsonValue
+import com.scandit.datacapture.reactnative.core.ScanditDataCaptureCoreModule
 import com.scandit.datacapture.reactnative.core.deserializers.Deserializers
 import com.scandit.datacapture.reactnative.core.deserializers.TreeLifecycleObserver
 import com.scandit.datacapture.reactnative.core.utils.EventWithResult
@@ -40,10 +41,10 @@ class ScanditDataCaptureTextModule(
     private val textCaptureDeserializer: TextCaptureDeserializer = TextCaptureDeserializer(),
     private val eventEmitter: RCTDeviceEventEmitter = LazyEventEmitter(reactContext)
 ) : ReactContextBaseJavaModule(reactContext),
-        DataCaptureContextListener,
-        TextCaptureDeserializerListener,
-        TextCaptureListener,
-        TreeLifecycleObserver.Callbacks {
+    DataCaptureContextListener,
+    TextCaptureDeserializerListener,
+    TextCaptureListener,
+    TreeLifecycleObserver.Callbacks {
 
     companion object {
         private const val DEFAULTS_KEY = "Defaults"
@@ -52,16 +53,16 @@ class ScanditDataCaptureTextModule(
             val settings = TextCaptureSettings.fromJson("{}")
 
             SerializableTextDefaults(
-                    SerializableTextCaptureDefaults(
-                            TextCapture.createRecommendedCameraSettings(),
-                            SerializableTextCaptureOverlayDefaults(
-                                    TextCaptureOverlay.DEFAULT_BRUSH
-                            ),
-                            SerializableTextCaptureSettingsDefaults(
-                                    settings.recognitionDirection.toJson(),
-                                    settings.duplicateFilter.asMillis()
-                            )
+                SerializableTextCaptureDefaults(
+                    TextCapture.createRecommendedCameraSettings(),
+                    SerializableTextCaptureOverlayDefaults(
+                        TextCaptureOverlay.DEFAULT_BRUSH
+                    ),
+                    SerializableTextCaptureSettingsDefaults(
+                        settings.recognitionDirection.toJson(),
+                        settings.duplicateFilter.asMillis()
                     )
+                )
             )
         }
 
@@ -71,7 +72,7 @@ class ScanditDataCaptureTextModule(
     }
 
     private val onTextCaptured =
-            EventWithResult<Boolean>(ON_TEXT_CAPTURED_EVENT_NAME, eventEmitter)
+        EventWithResult<Boolean>(ON_TEXT_CAPTURED_EVENT_NAME, eventEmitter)
 
     private var hasNativeListeners: AtomicBoolean = AtomicBoolean(false)
 
@@ -113,7 +114,7 @@ class ScanditDataCaptureTextModule(
     override fun getName(): String = "ScanditDataCaptureText"
 
     override fun getConstants(): MutableMap<String, Any> = mutableMapOf(
-            DEFAULTS_KEY to DEFAULTS.toWritableMap()
+        DEFAULTS_KEY to DEFAULTS.toWritableMap()
     )
 
     override fun onTreeCreated(root: DataCaptureContext) {
@@ -158,6 +159,8 @@ class ScanditDataCaptureTextModule(
     }
 
     override fun onTextCaptured(mode: TextCapture, session: TextCaptureSession, data: FrameData) {
+        ScanditDataCaptureCoreModule.lastFrame = data
+
         val params = writableMap {
             putString(FIELD_SESSION, session.toJson())
         }
@@ -165,6 +168,7 @@ class ScanditDataCaptureTextModule(
         if (!hasNativeListeners.get()) return
         val enabled = onTextCaptured.emitForResult(params, mode.isEnabled)
         mode.isEnabled = enabled
+        ScanditDataCaptureCoreModule.lastFrame = null
     }
 
     @ReactMethod

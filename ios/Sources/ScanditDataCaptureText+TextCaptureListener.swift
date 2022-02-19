@@ -6,11 +6,15 @@
 
 import Foundation
 import ScanditTextCapture
+import ScanditDataCaptureCore
 
 extension ScanditDataCaptureText: TextCaptureListener {
     func textCapture(_ textCapture: TextCapture,
                      didCaptureIn session: TextCaptureSession,
                      frameData: FrameData) {
+        ScanditDataCaptureCore.lastFrame = frameData
+        defer { ScanditDataCaptureCore.lastFrame = nil }
+
         let body = ["session": session.jsonString]
         guard let value = didCaptureTextLock.wait(afterDoing: {
             return sendEvent(withName: .didCaptureText, body: body)

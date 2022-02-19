@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextCaptureListenerProxy = void 0;
 var react_native_1 = require("react-native");
+var CameraProxy_1 = require("scandit-react-native-datacapture-core/js/native/CameraProxy");
 var TextCaptureSession_1 = require("../TextCaptureSession");
 // tslint:disable:variable-name
 var NativeModule = react_native_1.NativeModules.ScanditDataCaptureText;
@@ -41,7 +42,7 @@ var TextCaptureListenerProxy = /** @class */ (function () {
         mode.isInListenerCallback = true;
         mode.listeners.forEach(function (listener) {
             if (listener.didCaptureText) {
-                listener.didCaptureText(_this.textCapture, session);
+                listener.didCaptureText(_this.textCapture, session, CameraProxy_1.CameraProxy.getLastFrame);
             }
         });
         mode.isInListenerCallback = false;

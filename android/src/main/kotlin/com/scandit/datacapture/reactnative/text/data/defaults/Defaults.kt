@@ -79,4 +79,4 @@ internal data class SerializableTextCaptureSettingsDefaults(
 internal fun Brush.toWritableMap(): WritableMap = SerializableBrushDefaults(this).toWritableMap()
 
 internal fun CameraSettings.toWritableMap(): WritableMap =
-        SerializableCameraSettingsDefaults(this).toWritableMap()
+    SerializableCameraSettingsDefaults(this).toWritableMap()

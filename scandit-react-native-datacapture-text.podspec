@@ -9,15 +9,15 @@ Pod::Spec.new do |s|
   s.homepage                = package["homepage"]
   s.license                 = package["license"]
   s.authors                 = { package["author"]["name"] => package["author"]["email"] }
-  s.platforms               = { :ios => "11.0" }
+  s.platforms               = { :ios => "13.0" }
   s.source                  = { :git => package["homepage"] + ".git", :tag => "#{s.version}" }
   s.swift_version           = '4.0'
   s.source_files            = "ios/Sources/**/*.{h,m,swift}"
   s.requires_arc            = true
   s.module_name             = "ScanditDataCaptureText"
   s.header_dir              = "ScanditDataCaptureText"
-  s.dependency 'ScanditTextCapture', '= 6.15.2'
-  s.dependency 'ScanditOCR', '= 6.15.2'
+  s.dependency 'ScanditTextCapture', '= 6.16.1'
+  s.dependency 'ScanditOCR', '= 6.16.1'
 
   s.dependency "React"
   s.dependency "scandit-react-native-datacapture-core"

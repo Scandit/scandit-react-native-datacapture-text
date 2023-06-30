@@ -17,9 +17,9 @@ import com.scandit.datacapture.core.capture.DataCaptureMode
 import com.scandit.datacapture.core.common.toJson
 import com.scandit.datacapture.core.data.FrameData
 import com.scandit.datacapture.core.json.JsonValue
-import com.scandit.datacapture.reactnative.core.ScanditDataCaptureCoreModule
-import com.scandit.datacapture.reactnative.core.deserializers.Deserializers
-import com.scandit.datacapture.reactnative.core.deserializers.TreeLifecycleObserver
+import com.scandit.datacapture.frameworks.core.deserialization.DeserializationLifecycleObserver
+import com.scandit.datacapture.frameworks.core.deserialization.Deserializers
+import com.scandit.datacapture.frameworks.core.utils.LastFrameData
 import com.scandit.datacapture.reactnative.core.utils.EventWithResult
 import com.scandit.datacapture.reactnative.core.utils.LazyEventEmitter
 import com.scandit.datacapture.reactnative.core.utils.writableMap
@@ -44,7 +44,7 @@ class ScanditDataCaptureTextModule(
     DataCaptureContextListener,
     TextCaptureDeserializerListener,
     TextCaptureListener,
-    TreeLifecycleObserver.Callbacks {
+    DeserializationLifecycleObserver.Observer {
 
     companion object {
         private const val DEFAULTS_KEY = "Defaults"
@@ -100,15 +100,15 @@ class ScanditDataCaptureTextModule(
     init {
         textCaptureDeserializer.listener = this
         Deserializers.Factory.addModeDeserializer(textCaptureDeserializer)
-        TreeLifecycleObserver.callbacks += this
+        DeserializationLifecycleObserver.attach(this)
     }
 
     override fun onCatalystInstanceDestroy() {
-        TreeLifecycleObserver.callbacks -= this
+        DeserializationLifecycleObserver.detach(this)
         Deserializers.Factory.removeModeDeserializer(textCaptureDeserializer)
         textCaptureDeserializer.listener = null
 
-        onTreeDestroyed()
+        textCapture = null
     }
 
     override fun getName(): String = "ScanditDataCaptureText"
@@ -117,11 +117,11 @@ class ScanditDataCaptureTextModule(
         DEFAULTS_KEY to DEFAULTS.toWritableMap()
     )
 
-    override fun onTreeCreated(root: DataCaptureContext) {
-        dataCaptureContext = root
+    override fun onDataCaptureContextDeserialized(dataCaptureContext: DataCaptureContext) {
+        this.dataCaptureContext = dataCaptureContext
     }
 
-    override fun onTreeDestroyed() {
+    override fun onDataCaptureContextDisposed() {
         textCapture = null
     }
 
@@ -159,7 +159,7 @@ class ScanditDataCaptureTextModule(
     }
 
     override fun onTextCaptured(mode: TextCapture, session: TextCaptureSession, data: FrameData) {
-        ScanditDataCaptureCoreModule.lastFrame = data
+        LastFrameData.frameData.set(data)
 
         val params = writableMap {
             putString(FIELD_SESSION, session.toJson())
@@ -168,7 +168,7 @@ class ScanditDataCaptureTextModule(
         if (!hasNativeListeners.get()) return
         val enabled = onTextCaptured.emitForResult(params, mode.isEnabled)
         mode.isEnabled = enabled
-        ScanditDataCaptureCoreModule.lastFrame = null
+        LastFrameData.frameData.set(null)
     }
 
     @ReactMethod

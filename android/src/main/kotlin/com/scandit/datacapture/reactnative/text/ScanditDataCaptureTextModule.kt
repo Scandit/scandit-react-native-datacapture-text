@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ScanditDataCaptureTextModule(
     private val reactContext: ReactApplicationContext,
     private val textCaptureDeserializer: TextCaptureDeserializer = TextCaptureDeserializer(),
-    private val eventEmitter: RCTDeviceEventEmitter = LazyEventEmitter(reactContext)
+    eventEmitter: RCTDeviceEventEmitter = LazyEventEmitter(reactContext)
 ) : ReactContextBaseJavaModule(reactContext),
     DataCaptureContextListener,
     TextCaptureDeserializerListener,
@@ -103,12 +103,13 @@ class ScanditDataCaptureTextModule(
         DeserializationLifecycleObserver.attach(this)
     }
 
-    override fun onCatalystInstanceDestroy() {
+    override fun invalidate() {
         DeserializationLifecycleObserver.detach(this)
         Deserializers.Factory.removeModeDeserializer(textCaptureDeserializer)
         textCaptureDeserializer.listener = null
 
         textCapture = null
+        super.invalidate()
     }
 
     override fun getName(): String = "ScanditDataCaptureText"

@@ -10,14 +10,10 @@ import ScanditDataCaptureCore
 
 extension ScanditDataCaptureText {
     func registerDeserializer() {
+        let deserializer = TextCaptureDeserializer()
         deserializer.delegate = self
         ScanditDataCaptureCore.register(modeDeserializer: deserializer)
     }
-    func unregisterDeserializer() {
-        deserializer.delegate = nil
-        ScanditDataCaptureCore.unregister(modeDeserializer: deserializer)
-    }
-
 }
 
 extension ScanditDataCaptureText: TextCaptureDeserializerDelegate {

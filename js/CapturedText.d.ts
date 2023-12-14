@@ -1,4 +1,4 @@
-import { Quadrilateral } from 'scandit-react-native-datacapture-core';
+import { Quadrilateral } from 'scandit-react-native-datacapture-core/js/Common';
 export declare class CapturedText {
     private _value;
     get value(): string;

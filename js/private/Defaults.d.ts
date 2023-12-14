@@ -1,6 +1,6 @@
-import { CameraSettings } from 'scandit-react-native-datacapture-core';
-import { Color } from 'scandit-react-native-datacapture-core';
-import { Direction } from 'scandit-react-native-datacapture-core';
+import { CameraSettings } from 'scandit-react-native-datacapture-core/js/Camera+Related';
+import { Color } from 'scandit-react-native-datacapture-core/js/Common';
+import { Direction } from 'scandit-react-native-datacapture-core/js/CommonEnums';
 export declare const Defaults: {
     TextCapture: {
         TextCaptureOverlay: {

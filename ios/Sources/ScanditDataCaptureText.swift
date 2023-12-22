@@ -6,6 +6,7 @@
 
 import React
 import Foundation
+import ScanditTextCapture
 import ScanditDataCaptureCore
 
 @objc(ScanditDataCaptureText)
@@ -15,6 +16,7 @@ class ScanditDataCaptureText: RCTEventEmitter {
         registerDeserializer()
     }
 
+    internal let deserializer = TextCaptureDeserializer()
     var hasListeners = false
     internal let didCaptureTextLock =
         CallbackLock<Bool>(name: ScanditDataCaptureTextEvent.didCaptureText.rawValue)
@@ -29,6 +31,7 @@ class ScanditDataCaptureText: RCTEventEmitter {
 
     @objc override func invalidate() {
         super.invalidate()
+        unregisterDeserializer()
         unlockLocks()
     }
 

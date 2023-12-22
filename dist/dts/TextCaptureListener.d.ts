@@ -1,4 +1,4 @@
-import { FrameData } from 'scandit-react-native-datacapture-core/js/Camera+Related';
+import { FrameData } from 'scandit-react-native-datacapture-core';
 import { TextCapture } from './TextCapture';
 import { TextCaptureSession } from './TextCaptureSession';
 export interface TextCaptureListener {

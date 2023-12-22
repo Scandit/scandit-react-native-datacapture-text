@@ -1,4 +1,4 @@
-import { QuadrilateralJSON } from 'scandit-react-native-datacapture-core/js/private/PrivateCommon';
+import { QuadrilateralJSON } from 'scandit-datacapture-frameworks-core';
 import { CapturedText } from '../CapturedText';
 export interface CapturedTextJSON {
     value: string;

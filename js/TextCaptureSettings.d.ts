@@ -1,6 +1,6 @@
-import { Direction } from 'scandit-react-native-datacapture-core';
-import { LocationSelection } from 'scandit-react-native-datacapture-core';
-import { DefaultSerializeable } from 'scandit-datacapture-frameworks-core';
+import { Direction } from 'scandit-react-native-datacapture-core/js/CommonEnums';
+import { LocationSelection } from 'scandit-react-native-datacapture-core/js/LocationSelection';
+import { DefaultSerializeable } from 'scandit-react-native-datacapture-core/js/private/Serializeable';
 export declare class TextCaptureSettings extends DefaultSerializeable {
     duplicateFilter: number;
     locationSelection: LocationSelection | null;

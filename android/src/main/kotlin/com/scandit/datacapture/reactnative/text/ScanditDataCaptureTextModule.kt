@@ -19,7 +19,6 @@ import com.scandit.datacapture.core.data.FrameData
 import com.scandit.datacapture.core.json.JsonValue
 import com.scandit.datacapture.frameworks.core.deserialization.DeserializationLifecycleObserver
 import com.scandit.datacapture.frameworks.core.deserialization.Deserializers
-import com.scandit.datacapture.frameworks.core.utils.DefaultLastFrameData
 import com.scandit.datacapture.frameworks.core.utils.LastFrameData
 import com.scandit.datacapture.reactnative.core.utils.EventWithResult
 import com.scandit.datacapture.reactnative.core.utils.LazyEventEmitter
@@ -40,8 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ScanditDataCaptureTextModule(
     private val reactContext: ReactApplicationContext,
     private val textCaptureDeserializer: TextCaptureDeserializer = TextCaptureDeserializer(),
-    eventEmitter: RCTDeviceEventEmitter = LazyEventEmitter(reactContext),
-    private val lastFrameData: LastFrameData = DefaultLastFrameData.getInstance()
+    eventEmitter: RCTDeviceEventEmitter = LazyEventEmitter(reactContext)
 ) : ReactContextBaseJavaModule(reactContext),
     DataCaptureContextListener,
     TextCaptureDeserializerListener,
@@ -162,7 +160,7 @@ class ScanditDataCaptureTextModule(
     }
 
     override fun onTextCaptured(mode: TextCapture, session: TextCaptureSession, data: FrameData) {
-        lastFrameData.frameData.set(data)
+        LastFrameData.frameData.set(data)
 
         val params = writableMap {
             putString(FIELD_SESSION, session.toJson())
@@ -171,7 +169,7 @@ class ScanditDataCaptureTextModule(
         if (!hasNativeListeners.get()) return
         val enabled = onTextCaptured.emitForResult(params, mode.isEnabled)
         mode.isEnabled = enabled
-        lastFrameData.frameData.set(null)
+        LastFrameData.frameData.set(null)
     }
 
     @ReactMethod

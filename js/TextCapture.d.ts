@@ -1,6 +1,6 @@
-import { CameraSettings } from 'scandit-react-native-datacapture-core';
-import { DataCaptureContext, DataCaptureMode } from 'scandit-react-native-datacapture-core';
-import { DefaultSerializeable } from 'scandit-datacapture-frameworks-core';
+import { CameraSettings } from 'scandit-react-native-datacapture-core/js/Camera+Related';
+import { DataCaptureContext, DataCaptureMode } from 'scandit-react-native-datacapture-core/js/DataCaptureContext';
+import { DefaultSerializeable } from 'scandit-react-native-datacapture-core/js/private/Serializeable';
 import { TextCaptureFeedback } from './TextCaptureFeedback';
 import { TextCaptureListener } from './TextCaptureListener';
 import { TextCaptureSettings } from './TextCaptureSettings';

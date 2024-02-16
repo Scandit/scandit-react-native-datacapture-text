@@ -72,7 +72,7 @@ const EventEmitter = new NativeEventEmitter(NativeModule$1);
 // tslint:enable:variable-name
 var TextCaptureListenerEventName;
 (function (TextCaptureListenerEventName) {
-    TextCaptureListenerEventName["didCaptureText"] = "textCaptureListener-didCaptureText";
+    TextCaptureListenerEventName["didCaptureText"] = "TextCaptureListener.didCaptureText";
 })(TextCaptureListenerEventName || (TextCaptureListenerEventName = {}));
 class TextCaptureListenerProxy {
     textCapture;
@@ -85,11 +85,24 @@ class TextCaptureListenerProxy {
     subscribeListener() {
         NativeModule$1.registerListenerForEvents();
         const didCaptureTextListener = EventEmitter.addListener(TextCaptureListenerEventName.didCaptureText, (body) => {
-            const session = TextCaptureSession.fromJSON(JSON.parse(body.session));
+            const payload = JSON.parse(body);
+            const session = TextCaptureSession.fromJSON(JSON.parse(payload.session));
             this.notifyListenersOfDidCaptureText(session);
             NativeModule$1.finishDidCaptureTextCallback(this.textCapture.isEnabled);
         });
         this.nativeListeners.push(didCaptureTextListener);
+    }
+    updateTextCaptureMode() {
+        return NativeModule$1.updateTextCaptureMode(JSON.stringify(this.textCapture.toJSON()));
+    }
+    applyTextCaptureModeSettings(newSettings) {
+        return NativeModule$1.applyTextCaptureModeSettings(JSON.stringify(newSettings.toJSON()));
+    }
+    updateTextCaptureOverlay(overlay) {
+        return NativeModule$1.updateTextCaptureOverlay(JSON.stringify(overlay.toJSON()));
+    }
+    setModeEnabledState(enabled) {
+        return NativeModule$1.setModeEnabledState(enabled);
     }
     unsubscribeListener() {
         NativeModule$1.unregisterListenerForEvents();
@@ -144,11 +157,7 @@ class TextCapture extends DefaultSerializeable {
     }
     set isEnabled(isEnabled) {
         this._isEnabled = isEnabled;
-        if (!this.isInListenerCallback) {
-            // If we're "in" a listener callback, we don't want to deserialize the context to update the enabled state,
-            // but rather pass that back to be applied in the native callback.
-            this.didChange();
-        }
+        this.listenerProxy.setModeEnabledState(isEnabled);
     }
     get context() {
         return this._context;
@@ -161,7 +170,7 @@ class TextCapture extends DefaultSerializeable {
     }
     set feedback(feedback) {
         this._feedback = feedback;
-        this.didChange();
+        this.listenerProxy.updateTextCaptureMode();
     }
     type = 'textCapture';
     _isEnabled = true;
@@ -197,7 +206,7 @@ class TextCapture extends DefaultSerializeable {
     }
     applySettings(settings) {
         this.settings = settings;
-        return this.didChange();
+        return this.listenerProxy.applyTextCaptureModeSettings(settings);
     }
     addListener(listener) {
         if (this.listeners.includes(listener)) {
@@ -211,17 +220,9 @@ class TextCapture extends DefaultSerializeable {
         }
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
-    didChange() {
-        if (this.context) {
-            return this.context.update();
-        }
-        else {
-            return Promise.resolve();
-        }
-    }
 }
 __decorate([
-    nameForSerialization('enabled')
+    ignoreFromSerialization
 ], TextCapture.prototype, "_isEnabled", void 0);
 __decorate([
     nameForSerialization('feedback')
@@ -254,14 +255,14 @@ class TextCaptureOverlay extends DefaultSerializeable {
     }
     set viewfinder(newViewfinder) {
         this._viewfinder = newViewfinder;
-        this.textCapture.didChange();
+        this.textCapture.listenerProxy.updateTextCaptureOverlay(this);
     }
     get shouldShowScanAreaGuides() {
         return this._shouldShowScanAreaGuides;
     }
     set shouldShowScanAreaGuides(shouldShow) {
         this._shouldShowScanAreaGuides = shouldShow;
-        this.textCapture.didChange();
+        this.textCapture.listenerProxy.updateTextCaptureOverlay(this);
     }
     static withTextCapture(textCapture) {
         return TextCaptureOverlay.withTextCaptureForView(textCapture, null);

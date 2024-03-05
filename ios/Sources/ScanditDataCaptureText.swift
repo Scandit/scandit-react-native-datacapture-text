@@ -6,34 +6,20 @@
 
 import React
 import Foundation
-import ScanditFrameworksText
+import ScanditTextCapture
 import ScanditDataCaptureCore
 
 @objc(ScanditDataCaptureText)
 class ScanditDataCaptureText: RCTEventEmitter {
-    var textModule: TextCaptureModule!
-
     override init() {
         super.init()
-        textModule = TextCaptureModule(
-            textCaptureListener: FrameworksTextCaptureListener(
-                emitter: ReactNativeEmitter(emitter: self)
-            )
-        )
-        textModule.didStart()
+        registerDeserializer()
     }
 
-    @objc override func supportedEvents() -> [String]! {
-        FrameworksTextCaptureEvent.allCases.map { $0.rawValue }
-    }
-
-    override func constantsToExport() -> [AnyHashable: Any]! {
-        [
-            "Defaults": [
-                "TextCapture": textModule.defaults.toEncodable()
-            ]
-        ]
-    }
+    internal let deserializer = TextCaptureDeserializer()
+    var hasListeners = false
+    internal let didCaptureTextLock =
+        CallbackLock<Bool>(name: ScanditDataCaptureTextEvent.didCaptureText.rawValue)
 
     @objc override class func requiresMainQueueSetup() -> Bool {
         return true
@@ -45,49 +31,21 @@ class ScanditDataCaptureText: RCTEventEmitter {
 
     @objc override func invalidate() {
         super.invalidate()
-        textModule.didStop()
+        unregisterDeserializer()
+        unlockLocks()
     }
 
-    deinit {
-        invalidate()
+    internal func unlockLocks() {
+        didCaptureTextLock.reset()
     }
 
-    @objc(finishDidCaptureTextCallback:)
-    func finishDidCaptureTextCallback(enabled: Bool) {
-        textModule.finishDidCaptureText(enabled: enabled)
-    }
-
+    // Empty methods to unify the logic on the TS side for supporting functionality automatically provided by RN on iOS,
+    // but custom implemented on Android.
     @objc func registerListenerForEvents() {
-        textModule.addListener()
+        // Empty on purpose
     }
 
     @objc func unregisterListenerForEvents() {
-        textModule.removeListener()
-    }
-
-    @objc(setModeEnabledState:)
-    func setModeEnabledState(enabled: Bool) {
-        textModule.setModeEnabled(enabled: enabled)
-    }
-
-    @objc(updateTextCaptureOverlay:resolver:rejecter:)
-    func updateTextCaptureOverlay(overlayJson: String,
-                      resolve: @escaping RCTPromiseResolveBlock,
-                      reject: @escaping RCTPromiseRejectBlock) {
-        textModule.updateOverlay(overlayJson: overlayJson, result: ReactNativeResult(resolve, reject))
-    }
-
-    @objc(updateTextCaptureMode:resolver:rejecter:)
-    func updateTextCaptureMode(modeJson: String,
-                      resolve: @escaping RCTPromiseResolveBlock,
-                      reject: @escaping RCTPromiseRejectBlock) {
-        textModule.updateModeFromJson(modeJson: modeJson, result: ReactNativeResult(resolve, reject))
-    }
-
-    @objc(applyTextCaptureModeSettings:resolver:rejecter:)
-    func applyTextCaptureModeSettings(modeSettingsJson: String,
-                      resolve: @escaping RCTPromiseResolveBlock,
-                      reject: @escaping RCTPromiseRejectBlock) {
-        textModule.applyModeSettings(modeSettingsJson: modeSettingsJson, result: ReactNativeResult(resolve, reject))
+        // Empty on purpose
     }
 }

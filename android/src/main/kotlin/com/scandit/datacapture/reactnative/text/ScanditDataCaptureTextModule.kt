@@ -6,63 +6,177 @@
 
 package com.scandit.datacapture.reactnative.text
 
-import com.facebook.react.bridge.Promise
+import androidx.annotation.VisibleForTesting
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.scandit.datacapture.frameworks.text.TextCaptureModule
-import com.scandit.datacapture.reactnative.core.utils.ReactNativeResult
+import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
+import com.scandit.datacapture.core.capture.DataCaptureContext
+import com.scandit.datacapture.core.capture.DataCaptureContextListener
+import com.scandit.datacapture.core.capture.DataCaptureMode
+import com.scandit.datacapture.core.common.toJson
+import com.scandit.datacapture.core.data.FrameData
+import com.scandit.datacapture.core.json.JsonValue
+import com.scandit.datacapture.frameworks.core.deserialization.DeserializationLifecycleObserver
+import com.scandit.datacapture.frameworks.core.deserialization.Deserializers
+import com.scandit.datacapture.frameworks.core.utils.DefaultLastFrameData
+import com.scandit.datacapture.frameworks.core.utils.LastFrameData
+import com.scandit.datacapture.reactnative.core.utils.EventWithResult
+import com.scandit.datacapture.reactnative.core.utils.LazyEventEmitter
+import com.scandit.datacapture.reactnative.core.utils.writableMap
+import com.scandit.datacapture.reactnative.text.data.defaults.SerializableTextCaptureDefaults
+import com.scandit.datacapture.reactnative.text.data.defaults.SerializableTextCaptureOverlayDefaults
+import com.scandit.datacapture.reactnative.text.data.defaults.SerializableTextCaptureSettingsDefaults
+import com.scandit.datacapture.reactnative.text.data.defaults.SerializableTextDefaults
+import com.scandit.datacapture.text.capture.TextCapture
+import com.scandit.datacapture.text.capture.TextCaptureListener
+import com.scandit.datacapture.text.capture.TextCaptureSession
+import com.scandit.datacapture.text.capture.TextCaptureSettings
+import com.scandit.datacapture.text.capture.serialization.TextCaptureDeserializer
+import com.scandit.datacapture.text.capture.serialization.TextCaptureDeserializerListener
+import com.scandit.datacapture.text.ui.TextCaptureOverlay
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ScanditDataCaptureTextModule(
-    reactContext: ReactApplicationContext,
-    private val textCaptureModule: TextCaptureModule,
-) : ReactContextBaseJavaModule(reactContext) {
+    private val reactContext: ReactApplicationContext,
+    private val textCaptureDeserializer: TextCaptureDeserializer = TextCaptureDeserializer(),
+    eventEmitter: RCTDeviceEventEmitter = LazyEventEmitter(reactContext),
+    private val lastFrameData: LastFrameData = DefaultLastFrameData.getInstance()
+) : ReactContextBaseJavaModule(reactContext),
+    DataCaptureContextListener,
+    TextCaptureDeserializerListener,
+    TextCaptureListener,
+    DeserializationLifecycleObserver.Observer {
+
+    companion object {
+        private const val DEFAULTS_KEY = "Defaults"
+
+        private val DEFAULTS: SerializableTextDefaults by lazy {
+            val settings = TextCaptureSettings.fromJson("{}")
+
+            SerializableTextDefaults(
+                SerializableTextCaptureDefaults(
+                    TextCapture.createRecommendedCameraSettings(),
+                    SerializableTextCaptureOverlayDefaults(
+                        TextCaptureOverlay.defaultBrush()
+                    ),
+                    SerializableTextCaptureSettingsDefaults(
+                        settings.recognitionDirection.toJson(),
+                        settings.duplicateFilter.asMillis()
+                    )
+                )
+            )
+        }
+
+        private const val ON_TEXT_CAPTURED_EVENT_NAME = "textCaptureListener-didCaptureText"
+
+        private const val FIELD_SESSION = "session"
+    }
+
+    private val onTextCaptured =
+        EventWithResult<Boolean>(ON_TEXT_CAPTURED_EVENT_NAME, eventEmitter)
+
+    private var hasNativeListeners: AtomicBoolean = AtomicBoolean(false)
+
+    private fun setHasNativeListeners(hasListeners: Boolean) {
+        if (hasNativeListeners.getAndSet(hasListeners) && !hasListeners) {
+            onTextCaptured.onCancel()
+        }
+    }
+
+    private var dataCaptureContext: DataCaptureContext? = null
+        private set(value) {
+            field?.removeListener(this)
+            field = value?.also { it.addListener(this) }
+        }
+
+    @VisibleForTesting
+    var textCapture: TextCapture? = null
+        private set(value) {
+            if (value != field) {
+                field?.removeListener(this)
+                field = value?.also { it.addListener(this) }
+            }
+        }
+
+    init {
+        textCaptureDeserializer.listener = this
+        Deserializers.Factory.addModeDeserializer(textCaptureDeserializer)
+        DeserializationLifecycleObserver.attach(this)
+    }
 
     override fun invalidate() {
-        textCaptureModule.onDestroy()
+        DeserializationLifecycleObserver.detach(this)
+        Deserializers.Factory.removeModeDeserializer(textCaptureDeserializer)
+        textCaptureDeserializer.listener = null
+
+        textCapture = null
         super.invalidate()
     }
 
     override fun getName(): String = "ScanditDataCaptureText"
 
     override fun getConstants(): MutableMap<String, Any> = mutableMapOf(
-        "Defaults" to mapOf(
-            "TextCapture" to textCaptureModule.getDefaults()
-        )
+        DEFAULTS_KEY to DEFAULTS.toWritableMap()
     )
 
-    @ReactMethod
-    fun registerListenerForEvents(promise: Promise) {
-        textCaptureModule.addListener(ReactNativeResult(promise))
+    override fun onDataCaptureContextDeserialized(dataCaptureContext: DataCaptureContext) {
+        this.dataCaptureContext = dataCaptureContext
+    }
+
+    override fun onDataCaptureContextDisposed() {
+        textCapture = null
+    }
+
+    override fun onModeRemoved(
+        dataCaptureContext: DataCaptureContext,
+        dataCaptureMode: DataCaptureMode
+    ) {
+        reactContext.runOnNativeModulesQueueThread {
+            if (dataCaptureContext == this.dataCaptureContext && dataCaptureMode == textCapture) {
+                textCapture = null
+            }
+        }
+    }
+
+    override fun onModeDeserializationFinished(
+        deserializer: TextCaptureDeserializer,
+        mode: TextCapture,
+        json: JsonValue
+    ) {
+        textCapture = mode.also {
+            if (json.contains("enabled")) {
+                it.isEnabled = json.requireByKeyAsBoolean("enabled")
+            }
+        }
     }
 
     @ReactMethod
-    fun unregisterListenerForEvents(promise: Promise) {
-        textCaptureModule.removeListener(ReactNativeResult(promise))
+    fun registerListenerForEvents() {
+        setHasNativeListeners(true)
     }
 
     @ReactMethod
-    fun finishDidCaptureTextCallback(enabled: Boolean, promise: Promise) {
-        textCaptureModule.finishDidCapture(enabled, ReactNativeResult(promise))
+    fun unregisterListenerForEvents() {
+        setHasNativeListeners(false)
+    }
+
+    override fun onTextCaptured(mode: TextCapture, session: TextCaptureSession, data: FrameData) {
+        lastFrameData.frameData.set(data)
+
+        val params = writableMap {
+            putString(FIELD_SESSION, session.toJson())
+        }
+
+        if (!hasNativeListeners.get()) return
+        val enabled = onTextCaptured.emitForResult(params, mode.isEnabled)
+        mode.isEnabled = enabled
+        lastFrameData.frameData.set(null)
     }
 
     @ReactMethod
-    fun setModeEnabledState(enabled: Boolean, promise: Promise) {
-        textCaptureModule.setModeEnabled(enabled, ReactNativeResult(promise))
-    }
-
-    @ReactMethod
-    fun updateTextCaptureOverlay(overlayJson: String, promise: Promise) {
-        textCaptureModule.updateOverlay(overlayJson, ReactNativeResult(promise))
-    }
-
-    @ReactMethod
-    fun updateTextCaptureMode(modeJson: String, promise: Promise) {
-        textCaptureModule.updateModeFromJson(modeJson, ReactNativeResult(promise))
-    }
-
-    @ReactMethod
-    fun applyTextCaptureModeSettings(modeSettingsJson: String, promise: Promise) {
-        textCaptureModule.applyModeSettings(modeSettingsJson, ReactNativeResult(promise))
+    fun finishDidCaptureTextCallback(enabled: Boolean) {
+        if (!hasNativeListeners.get()) return
+        onTextCaptured.onResult(enabled)
     }
 }

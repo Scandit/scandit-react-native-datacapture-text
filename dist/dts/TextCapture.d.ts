@@ -26,4 +26,5 @@ export declare class TextCapture extends DefaultSerializeable implements DataCap
     applySettings(settings: TextCaptureSettings): Promise<void>;
     addListener(listener: TextCaptureListener): void;
     removeListener(listener: TextCaptureListener): void;
+    private didChange;
 }

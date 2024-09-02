@@ -2,27 +2,16 @@ import { Color, CameraSettings, NoViewfinder, NoneLocationSelection, Quadrilater
 import { nameForSerialization, serializationDefault, DefaultSerializeable, ignoreFromSerialization, CameraController } from 'scandit-react-native-datacapture-core/dist/core';
 import { NativeModules, NativeEventEmitter } from 'react-native';
 
-/**
- * @deprecated Text Capture mode is deprecated.
- */
 class CapturedText {
     _value;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get value() {
         return this._value;
     }
     _location;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get location() {
         return this._location;
     }
     static fromJSON(json) {
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
         const text = new CapturedText();
         text._value = json.value;
         text._location = Quadrilateral.fromJSON(json.location);
@@ -59,27 +48,16 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
 
-/**
- * @deprecated Text Capture mode is deprecated.
- */
 class TextCaptureSession {
     _newlyCapturedTexts;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get newlyCapturedTexts() {
         return this._newlyCapturedTexts;
     }
     _frameSequenceID;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get frameSequenceID() {
         return this._frameSequenceID;
     }
     static fromJSON(json) {
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
         const session = new TextCaptureSession();
         session._newlyCapturedTexts = json.newlyCapturedTexts
             .map(CapturedText.fromJSON);
@@ -166,64 +144,30 @@ const Defaults = {
     },
 };
 
-/**
- * @deprecated Text Capture mode is deprecated.
- */
 class TextCaptureFeedback extends DefaultSerializeable {
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     success = Feedback.defaultFeedback;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static get default() {
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
         return new TextCaptureFeedback();
     }
 }
 
-/**
- * @deprecated Text Capture mode is deprecated.
- */
 class TextCapture extends DefaultSerializeable {
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get isEnabled() {
         return this._isEnabled;
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     set isEnabled(isEnabled) {
         this._isEnabled = isEnabled;
         this.listenerProxy.setModeEnabledState(isEnabled);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get context() {
         return this._context;
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static get recommendedCameraSettings() {
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
         return new CameraSettings(Defaults.TextCapture.RecommendedCameraSettings);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get feedback() {
         return this._feedback;
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     set feedback(feedback) {
         this._feedback = feedback;
         this.listenerProxy.updateTextCaptureMode();
@@ -248,9 +192,6 @@ class TextCapture extends DefaultSerializeable {
     listeners = [];
     listenerProxy;
     isInListenerCallback = false;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static forContext(context, settings) {
         const textCapture = new TextCapture();
         textCapture.settings = settings;
@@ -261,29 +202,18 @@ class TextCapture extends DefaultSerializeable {
     }
     constructor() {
         super();
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
         this.listenerProxy = TextCaptureListenerProxy.forTextCapture(this);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     applySettings(settings) {
         this.settings = settings;
         return this.listenerProxy.applyTextCaptureModeSettings(settings);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     addListener(listener) {
         if (this.listeners.includes(listener)) {
             return;
         }
         this.listeners.push(listener);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     removeListener(listener) {
         if (!this.listeners.includes(listener)) {
             return;
@@ -310,60 +240,33 @@ __decorate([
     ignoreFromSerialization
 ], TextCapture.prototype, "isInListenerCallback", void 0);
 
-/**
- * @deprecated Text Capture mode is deprecated.
- */
 class TextCaptureOverlay extends DefaultSerializeable {
     type = 'textCapture';
     textCapture;
     view;
     _shouldShowScanAreaGuides = false;
     _viewfinder = null;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static get defaultBrush() {
         return new Brush(Defaults.TextCapture.TextCaptureOverlay.Brush.fillColor, Defaults.TextCapture.TextCaptureOverlay.Brush.strokeColor, Defaults.TextCapture.TextCaptureOverlay.Brush.strokeWidth);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     brush = TextCaptureOverlay.defaultBrush;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get viewfinder() {
         return this._viewfinder;
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     set viewfinder(newViewfinder) {
         this._viewfinder = newViewfinder;
         this.textCapture.listenerProxy.updateTextCaptureOverlay(this);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     get shouldShowScanAreaGuides() {
         return this._shouldShowScanAreaGuides;
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     set shouldShowScanAreaGuides(shouldShow) {
         this._shouldShowScanAreaGuides = shouldShow;
         this.textCapture.listenerProxy.updateTextCaptureOverlay(this);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static withTextCapture(textCapture) {
         return TextCaptureOverlay.withTextCaptureForView(textCapture, null);
     }
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static withTextCaptureForView(textCapture, view) {
         const overlay = new TextCaptureOverlay();
         overlay.textCapture = textCapture;
@@ -374,8 +277,6 @@ class TextCaptureOverlay extends DefaultSerializeable {
     }
     constructor() {
         super();
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
     }
 }
 __decorate([
@@ -392,25 +293,10 @@ __decorate([
     nameForSerialization('viewfinder')
 ], TextCaptureOverlay.prototype, "_viewfinder", void 0);
 
-/**
- * @deprecated Text Capture mode is deprecated.
- */
 class TextCaptureSettings extends DefaultSerializeable {
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     duplicateFilter = Defaults.TextCapture.TextCaptureSettings.duplicateFilter;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     locationSelection = null;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     recognitionDirection = Defaults.TextCapture.TextCaptureSettings.recognitionDirection;
-    /**
-     * @deprecated Text Capture mode is deprecated.
-     */
     static fromJSON(json) {
         const settings = new TextCaptureSettings();
         Object.keys(json).forEach(key => {
@@ -420,8 +306,6 @@ class TextCaptureSettings extends DefaultSerializeable {
     }
     constructor() {
         super();
-        // tslint:disable-next-line:no-console
-        console.warn('Text Capture mode is deprecated.');
     }
 }
 __decorate([
